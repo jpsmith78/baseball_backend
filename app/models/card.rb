@@ -8,30 +8,62 @@ class Card
     end
 
     def self.all
-      results = DB.exec("SELECT * FROM card")
+      results = DB.exec(
+        <<-SQL
+            SELECT
+                card.*,
+                person.id AS person_id,
+                person.name, person.age,
+                person.interest
+            FROM card
+            LEFT JOIN person
+            ON card.owner_id = person.id;
+        SQL
+      )
       return results.map do |result|
-        {
-          "id" => result["id"].to_i,
-          "player" => result["player"],
-          "team" => result["team"],
-          "image" => result["image"],
-          "position" => result["position"],
-          "batting_avg" => result["batting_avg"],
-          "card_owner" => result["card_owner"]
-        }
+        if result["owner_id"]
+          owner = {
+            "person_id" => result["person_id"].to_i,
+            "name" => result["name"],
+            "age" => result["age"].to_i,
+            "interest" => result["interest"]
+          }
+        end
+          {
+            "id" => result["id"].to_i,
+            "player" => result["player"],
+            "team" => result["team"],
+            "image" => result["image"],
+            "position" => result["position"],
+            "batting_avg" => result["batting_avg"],
+            "owner" => owner,
+          }
       end #ends map do
     end #ends self all
 
     def self.find(id)
       results = DB.exec(
         <<-SQL
-          SELECT
-            card.*
-          FROM card
-          WHERE card.id=#{id}
+            SELECT
+                card.*,
+                person.id AS person_id,
+                person.name, person.age,
+                person.interest
+            FROM card
+            LEFT JOIN person
+              ON card.owner_id = person.id
+            WHERE card.id=#{id};
         SQL
       )
       result = results.first
+      if result["owner_id"]
+        owner = {
+          "person_id" => result["person_id"].to_i,
+          "name" => result["name"],
+          "age" => result["age"].to_i,
+          "interest" => result["interest"]
+        }
+      end
       return {
         "id" => result["id"].to_i,
         "player" => result["player"],
@@ -39,16 +71,17 @@ class Card
         "image" => result["image"],
         "position" => result["position"],
         "batting_avg" => result["batting_avg"],
-        "card_owner" => result["card_owner"]
+        "owner_id" => result["owner_id"].to_i,
+        "owner" => owner
       }
     end
 
     def self.create(opts)
       results = DB.exec(
         <<-SQL
-          INSERT INTO card (player, team, image, position, batting_avg, card_owner)
-          VALUES ('#{opts["player"]}', '#{opts["team"]}', '#{opts["image"]}', '#{opts["position"]}', #{opts["batting_avg"]}, '#{opts["card_owner"]}')
-          RETURNING id, player, team, image, position, batting_avg, card_owner
+          INSERT INTO card (player, team, image, position, batting_avg, owner_id)
+          VALUES ('#{opts["player"]}', '#{opts["team"]}', '#{opts["image"]}', '#{opts["position"]}', #{opts["batting_avg"]}, #{opts["owner_id"]})
+          RETURNING id, player, team, image, position, batting_avg, owner_id
         SQL
       )
       result = results.first
@@ -76,10 +109,10 @@ class Card
             team='#{opts["team"]}',
             image='#{opts["image"]}',
             position='#{opts["position"]}',
-            batting_avg=#{opts["batting_avg"]},
-            card_owner='#{opts["card_owner"]}'
+            batting_avg='#{opts["batting_avg"]}',
+            owner_id=#{opts["owner_id"]}
           WHERE id=#{id}
-          RETURNING id, player, team, image, position, batting_avg, card_owner;
+          RETURNING id, player, team, image, position, batting_avg, owner_id;
         SQL
       )
       return {
@@ -89,7 +122,7 @@ class Card
         "image" => results.first["image"],
         "position" => results.first["position"],
         "batting_avg" => results.first["batting_avg"],
-        "card_owner" => results.first["card_owner"]
+        "owner_id" => results.first["owner_id"].to_i
       }
     end
 

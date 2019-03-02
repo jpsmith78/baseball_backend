@@ -22,7 +22,7 @@ class Person
             card.batting_avg
         FROM person
         LEFT JOIN card
-        ON person.name = card.card_owner
+        ON person.id = card.owner_id
         ORDER BY person.id ASC;
       SQL
     )
@@ -47,7 +47,7 @@ class Person
           "team" => result["team"],
           "image" => result["image"],
           "position" => result["position"],
-          "batting_avg" => result["batting_avg"].to_f,
+          "batting_avg" => result["batting_avg"],
         }
         person.last["collection"].push(new_card)
       end
@@ -70,7 +70,7 @@ class Person
             card.batting_avg
         FROM person
         LEFT JOIN card
-        ON person.name = card.card_owner
+        ON person.id = card.owner_id
         WHERE person.id=#{id};
       SQL
     )
@@ -82,7 +82,7 @@ class Person
           "team" => result["team"],
           "image" => result["image"],
           "position" => result["position"],
-          "batting_avg" => result["batting_avg"].to_f,
+          "batting_avg" => result["batting_avg"],
           })
       end
     end
@@ -95,6 +95,7 @@ class Person
       "collection" => collection
     }
   end
+
 
   def self.create(opts)
     results = DB.exec(
@@ -115,6 +116,7 @@ class Person
       "interest" => results.first["interest"]
     }
   end
+
 
   def self.delete(id)
     results = DB.exec("DELETE FROM person WHERE id=#{id};")
