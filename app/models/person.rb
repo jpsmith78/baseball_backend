@@ -54,7 +54,7 @@ class Person
     results = DB.exec(
       <<-SQL
           UPDATE person
-          SET name='#{opts["name"]}', age=#{opts["age"]}, interest='#opts["interest"]'
+          SET name='#{opts["name"]}', age=#{opts["age"]}, interest='#{opts["interest"]}'
           WHERE id=#{id}
           RETURNING id, name, age, interest;
       SQL
