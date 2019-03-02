@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   #ROUTES FOR PERSON CONTROLLER
   get '/person', to: 'person#index'
-  get '/person/:id', to: 'peson#show'
+  get '/person/:id', to: 'person#show'
   post '/person', to: 'person#create'
   delete '/person/:id', to: 'person#delete'
   put '/person/:id', to: 'person#update'
