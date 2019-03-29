@@ -17,7 +17,8 @@ class Card
                 person.interest
             FROM card
             LEFT JOIN person
-            ON card.owner_id = person.id;
+            ON card.owner_id = person.id
+            ORDER BY card.id ASC;
         SQL
       )
       return results.map do |result|
